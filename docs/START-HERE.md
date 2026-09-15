@@ -183,49 +183,95 @@ Nano-vllm
 
 ## 4. 第一次如何运行项目
 
-### 第一步：打开终端
-
-在 Codex 中打开 Terminal 面板。看到 PowerShell 提示符后输入：
-
-```powershell
-cd E:\Project\Nano-vllm
-```
-
-检查当前位置：
-
-```powershell
-Get-Location
-```
-
-应该看到：
+Nano-vLLM 不能直接使用当前 Windows PowerShell 中的 Python。已经验证可用的推理环境位于：
 
 ```text
-E:\Project\Nano-vllm
+WSL 发行版：nano-ubuntu
+虚拟环境：/root/nano-vllm/.venv311
+Python：3.11.15
+PyTorch：2.5.1+cu124
+GPU：NVIDIA GeForce RTX 3060 Laptop GPU
 ```
 
-### 第二步：确认 Python 和 GPU 环境
+### 第一步：打开终端并进入正确的 WSL
 
-依次运行：
+在 Codex 中打开 Terminal 面板。最初看到的通常是 Windows PowerShell：
+
+```text
+PS E:\Project\Nano-vllm>
+```
+
+在 PowerShell 中输入：
 
 ```powershell
+wsl -d nano-ubuntu -u root
+```
+
+进入成功后，提示符会变成类似：
+
+```text
+root@电脑名:/mnt/e/Project/Nano-vllm#
+```
+
+从这一步开始，下面的命令都是 Linux 命令，不要再复制 `PS>` 等提示符。
+
+### 第二步：进入项目并激活虚拟环境
+
+```bash
+cd /mnt/e/Project/Nano-vllm
+```
+
+```bash
+source /root/nano-vllm/.venv311/bin/activate
+```
+
+成功后，提示符开头通常会出现：
+
+```text
+(.venv311)
+```
+
+检查当前 Python：
+
+```bash
+which python
 python --version
 ```
 
-```powershell
+应该得到：
+
+```text
+/root/nano-vllm/.venv311/bin/python
+Python 3.11.15
+```
+
+### 第三步：确认 PyTorch 和 GPU
+
+```bash
 python -c "import torch; print('torch=', torch.__version__); print('cuda=', torch.cuda.is_available()); print('gpu=', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'none')"
 ```
 
-把终端的完整输出复制到 `m0-notes.md`。如果出现错误，不要自己反复安装依赖，直接把错误原文发给 Codex。
+已验证的结果是：
 
-### 第三步：运行最小示例
+```text
+torch= 2.5.1+cu124
+cuda= True
+gpu= NVIDIA GeForce RTX 3060 Laptop GPU
+```
 
-当前 `example.py` 已经指向项目里的模型目录，可以运行：
+把终端输出复制到 `m0-notes.md`。如果结果不同，不要自己反复安装依赖，直接把错误原文发给 Codex。
 
-```powershell
+### 第四步：运行最小示例
+
+确认提示符仍以 `(.venv311)` 开头，然后运行：
+
+```bash
 python example.py
 ```
 
-第一次运行可能包含模型加载、编译或显存初始化，因此较慢是正常现象。
+当前 `example.py` 已经指向项目内的 `models/Qwen3-0.6B`。实际验证中，RTX 3060 6GB 可以成功完成三个 prompt 的生成。
+
+第一次运行可能包含模型加载、编译或显存初始化，因此较慢是正常现象。需要中止时按 `Ctrl+C`。
 
 成功标准：
 
@@ -235,7 +281,7 @@ python example.py
 
 如果运行成功，把耗时和输出摘要写进 `m0-notes.md`。如果失败，复制从 `Traceback` 开始的完整错误。
 
-### 第四步：暂时不要直接运行 `bench.py`
+### 第五步：暂时不要直接运行 `bench.py`
 
 当前 `bench.py` 使用的是：
 
@@ -250,6 +296,17 @@ E:\Project\Nano-vllm\models\Qwen3-0.6B
 ```
 
 因此第一次先运行 `example.py` 验证环境。等源码阅读完成后，我们再一起把 `bench.py` 改造成可以指定模型、随机种子和输出 JSON 的版本。
+
+### 第六步：退出 WSL
+
+运行完成后可以输入：
+
+```bash
+deactivate
+exit
+```
+
+终端将回到 Windows PowerShell。
 
 ## 5. 第一次允许编辑什么
 
@@ -353,4 +410,3 @@ m0-notes.md：
 ```
 
 收到反馈后，下一步才是一起修改 `bench.py`。届时会逐行说明创建哪些参数、为什么需要 JSON，以及怎样进行第一次 Git 提交。
-
